@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { IconSprite } from './components/Icon';
-import { TopBar, Header } from './components/Header';
+import { Header } from './components/Header';
 import Hero from './components/Hero';
+import { Standards, Products, ProductModal } from './components/Products';
 import About from './components/About';
-import Services from './components/Services';
-import Products from './components/Products';
-import { Stats, Marquee, Why, Partners, Cta } from './components/Sections';
+import { Services, Process, Sectors } from './components/Services';
+import { Projects, Brands, Marquee } from './components/Projects';
 import Contact from './components/Contact';
 import { Footer, FloatingButtons } from './components/Footer';
 import { Cursor, Preloader, ScrollProgress, usePointerEffects } from './components/Effects';
@@ -21,10 +21,10 @@ function useScrollState() {
     const update = () => {
       raf = 0;
       const y = scrollY;
-      setScrolled(y > 10);
+      setScrolled(y > 30);
       setShowTop(y > 700);
       if (Math.abs(y - last) > 6) {
-        setHideHeader(y > last && y > 500);
+        setHideHeader(y > last && y > 600);
         last = y;
       }
     };
@@ -52,7 +52,7 @@ function useReveal() {
 }
 
 export default function App() {
-  const [product, setProduct] = useState('tableros');
+  const [product, setProduct] = useState(null);
   const { scrolled, showTop, hideHeader } = useScrollState();
   useReveal();
   usePointerEffects();
@@ -69,22 +69,23 @@ export default function App() {
     <>
       <Preloader />
       <ScrollProgress />
-      <TopBar />
-      <Header scrolled={scrolled} hidden={hideHeader} onSelectProduct={setProduct} />
+      <Header scrolled={scrolled} hidden={hideHeader} onOpenProduct={setProduct} />
       <main>
         <Hero />
-        <Stats />
+        <Standards />
+        <Products onOpen={setProduct} />
         <About />
         <Services />
-        <Products active={product} onSelect={setProduct} />
+        <Process />
         <Marquee />
-        <Why />
-        <Partners />
-        <Cta />
+        <Sectors />
+        <Projects />
+        <Brands />
         <Contact />
       </main>
-      <Footer onSelectProduct={setProduct} />
+      <Footer onOpenProduct={setProduct} />
       <FloatingButtons showTop={showTop} />
+      {product && <ProductModal id={product} onChange={setProduct} onClose={() => setProduct(null)} />}
       <Cursor />
       <IconSprite />
     </>

@@ -1,50 +1,39 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-/* Galería de imágenes; al hacer clic abre el visor (lightbox) */
-export function Gallery({ name, images, className = '' }) {
-  const [index, setIndex] = useState(null);
-
+/* Encabezado de sección con título de dos tonos: usa <em> para la parte destacada */
+export function SectionHead({ eyebrow, title, text, align = 'center', light = false, children }) {
   return (
-    <>
-      <div className={`gallery ${className}`}>
-        {images.map((img, i) => (
-          <a
-            key={img.src}
-            href={img.src}
-            className={`gallery__item reveal reveal--zoom${i === 0 ? ' gallery__item--big' : ''}`}
-            style={{ '--d': `${Math.min(i, 6) * 70}ms` }}
-            onClick={(e) => { e.preventDefault(); setIndex(i); }}
-          >
-            <img src={img.src} alt={img.alt} loading="lazy" />
-          </a>
-        ))}
-      </div>
-      {index !== null && (
-        <Lightbox name={name} images={images} index={index} setIndex={setIndex} onClose={() => setIndex(null)} />
-      )}
-    </>
+    <div className={`shead shead--${align}${light ? ' shead--light' : ''} reveal`}>
+      {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+      <h2>{title}</h2>
+      {text && <p>{text}</p>}
+      {children}
+    </div>
   );
 }
 
-function Lightbox({ name, images, index, setIndex, onClose }) {
+/* Visor de imágenes a pantalla completa */
+export function Lightbox({ images, index, setIndex, onClose }) {
   const closeBtn = useRef();
   const touchX = useRef(0);
   const step = (d) => setIndex((i) => (i + d + images.length) % images.length);
 
   useEffect(() => {
     const lastFocus = document.activeElement;
+    const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     closeBtn.current.focus();
+    // En fase de captura para que Escape no cierre también un modal que esté debajo
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') { e.stopImmediatePropagation(); onClose(); }
       if (e.key === 'ArrowLeft') step(-1);
       if (e.key === 'ArrowRight') step(1);
     };
-    addEventListener('keydown', onKey);
+    addEventListener('keydown', onKey, true);
     return () => {
-      removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      removeEventListener('keydown', onKey, true);
+      document.body.style.overflow = prevOverflow;
       lastFocus?.focus();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,7 +58,7 @@ function Lightbox({ name, images, index, setIndex, onClose }) {
       <button className="lightbox__nav lightbox__prev" aria-label="Anterior" onClick={() => step(-1)}>&#8249;</button>
       <figure>
         <img key={img.src} src={img.src} alt={img.alt} />
-        <figcaption>{`${name} · ${index + 1} / ${images.length}`}</figcaption>
+        <figcaption>{img.group ? `${img.group} · ` : ''}{index + 1} / {images.length}</figcaption>
       </figure>
       <button className="lightbox__nav lightbox__next" aria-label="Siguiente" onClick={() => step(1)}>&#8250;</button>
     </div>,

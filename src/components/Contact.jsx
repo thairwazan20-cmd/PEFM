@@ -1,80 +1,114 @@
+import { useState } from 'react';
 import { Icon } from './Icon';
-import { PHONES, EMAILS, INTERESTS, waLink } from '../data';
+import { SectionHead } from './UI';
+import { PHONES, EMAILS, ADDRESS, MAP_SRC, INTERESTS, COTIZACION, waLink } from '../data';
 
-function handleSubmit(e) {
-  e.preventDefault();
-  const f = new FormData(e.currentTarget);
-  const msg = [
-    'Hola PEFM, quisiera una cotización.',
-    `*Nombre:* ${f.get('nombre')}`,
-    f.get('empresa') ? `*Empresa:* ${f.get('empresa')}` : '',
-    `*Teléfono:* ${f.get('telefono')}`,
-    `*Interés:* ${f.get('interes')}`,
-    `*Mensaje:* ${f.get('mensaje')}`,
-  ].filter(Boolean).join('\n');
-  window.open(waLink(msg), '_blank', 'noopener');
+function Field({ label, as = 'input', ...props }) {
+  const Tag = as;
+  return (
+    <label className={`field${as === 'textarea' ? ' field--area' : ''}`}>
+      <Tag placeholder=" " {...props} />
+      <span>{label}</span>
+    </label>
+  );
 }
 
 export default function Contact() {
+  const [interes, setInteres] = useState(INTERESTS[0]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const msg = [
+      'Hola PEFM, quisiera una cotización.',
+      `*Nombre:* ${f.get('nombre')}`,
+      f.get('empresa') ? `*Empresa:* ${f.get('empresa')}` : '',
+      `*Teléfono:* ${f.get('telefono')}`,
+      `*Interés:* ${interes}`,
+      `*Mensaje:* ${f.get('mensaje')}`,
+    ].filter(Boolean).join('\n');
+    window.open(waLink(msg), '_blank', 'noopener');
+  };
+
   return (
-    <section className="section section--alt section--grid" id="contacto">
+    <section className="section contact" id="contacto">
       <div className="container">
-        <div className="section__head reveal">
-          <span className="eyebrow">Contacto</span>
-          <h2>Hablemos de tu proyecto</h2>
-        </div>
-        <div className="contact">
-          <div className="contact__cards">
-            <div className="ccard reveal reveal--left" data-tilt>
-              <div className="ccard__icon"><Icon name="phone" className="" /></div>
+        <SectionHead
+          eyebrow="Contacto"
+          title={<>Hablemos de tu <em>proyecto</em></>}
+          text="Cuéntanos qué necesitas y te enviamos una cotización sin compromiso."
+        />
+
+        <div className="contact__grid">
+          <aside className="cinfo reveal reveal--left">
+            <h3>Información de contacto</h3>
+            <p>Atendemos a industria, minería y edificaciones en Lima y todo el Perú.</p>
+
+            <div className="cinfo__group">
+              <span className="cinfo__ico"><Icon name="phone" /></span>
               <div>
-                <h3>Teléfonos</h3>
+                <small>Teléfonos</small>
                 {PHONES.map((p) => <a key={p.href} href={p.href}>{p.label}</a>)}
               </div>
             </div>
-            <div className="ccard reveal reveal--left" data-tilt>
-              <div className="ccard__icon"><Icon name="mail" className="" /></div>
+            <div className="cinfo__group">
+              <span className="cinfo__ico"><Icon name="mail" /></span>
               <div>
-                <h3>Correos</h3>
+                <small>Correos</small>
                 {EMAILS.map((m) => <a key={m} href={`mailto:${m}`}>{m}</a>)}
               </div>
             </div>
-            <div className="ccard reveal reveal--left" data-tilt>
-              <div className="ccard__icon"><Icon name="pin" className="" /></div>
+            <div className="cinfo__group">
+              <span className="cinfo__ico"><Icon name="pin" /></span>
               <div>
-                <h3>Dirección</h3>
-                <p>Programa de Vivienda Casa Grande de Punchauca Mz. A Lt. 04 – Carabayllo – Lima</p>
+                <small>Dirección</small>
+                <p>{ADDRESS}</p>
               </div>
             </div>
-          </div>
 
-          <form className="form reveal reveal--right" onSubmit={handleSubmit}>
+            <a href={waLink(COTIZACION)} target="_blank" rel="noopener" className="btn btn--wa btn--block">
+              <Icon name="wa" /> Escríbenos por WhatsApp
+            </a>
+            <span className="cinfo__deco" aria-hidden="true"></span>
+          </aside>
+
+          <form className="cform reveal reveal--right" onSubmit={submit}>
             <h3>Solicita tu cotización</h3>
-            <div className="form__row">
-              <label>Nombre<input name="nombre" required autoComplete="name" /></label>
-              <label>Empresa<input name="empresa" autoComplete="organization" /></label>
+            <div className="cform__row">
+              <Field label="Nombre *" name="nombre" required autoComplete="name" />
+              <Field label="Empresa" name="empresa" autoComplete="organization" />
             </div>
-            <div className="form__row">
-              <label>Teléfono<input name="telefono" type="tel" required autoComplete="tel" /></label>
-              <label>Interés
-                <select name="interes">
-                  {INTERESTS.map((o) => <option key={o}>{o}</option>)}
-                </select>
-              </label>
-            </div>
-            <label>Mensaje<textarea name="mensaje" rows="4" required placeholder="Describe brevemente tu requerimiento"></textarea></label>
-            <button className="btn btn--accent btn--block" type="submit"><Icon name="wa" /> Enviar por WhatsApp</button>
-            <small className="form__note">Se abrirá WhatsApp con tu mensaje listo para enviar.</small>
+            <Field label="Teléfono *" name="telefono" type="tel" required autoComplete="tel" />
+
+            <fieldset className="cform__chips">
+              <legend>¿Qué necesitas?</legend>
+              {INTERESTS.map((o) => (
+                <button type="button" key={o} className="chip chip--sm" aria-pressed={interes === o} onClick={() => setInteres(o)}>
+                  {o}
+                </button>
+              ))}
+            </fieldset>
+
+            <Field as="textarea" label="Describe tu requerimiento *" name="mensaje" rows="4" required />
+            <button className="btn btn--accent btn--block btn--lg" type="submit">
+              <Icon name="wa" /> Enviar por WhatsApp
+            </button>
+            <small className="cform__note">Se abrirá WhatsApp con tu mensaje listo para enviar.</small>
           </form>
         </div>
 
         <div className="map reveal">
-          <iframe
-            title="Ubicación de PEFM en Carabayllo, Lima"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            src="https://maps.google.com/maps?q=Casa%20Grande%20de%20Punchauca%2C%20Carabayllo%2C%20Lima%2C%20Per%C3%BA&z=15&output=embed"
-          ></iframe>
+          <iframe title="Ubicación de PEFM en Carabayllo, Lima" loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={MAP_SRC}></iframe>
+          <div className="map__card">
+            <img src="/assets/img/emblema.png" alt="" width="40" height="42" />
+            <div>
+              <strong>PEFM S.A.C.</strong>
+              <span>Carabayllo – Lima, Perú</span>
+            </div>
+            <a href="https://maps.google.com/?q=Casa+Grande+de+Punchauca+Carabayllo+Lima" target="_blank" rel="noopener" className="btn btn--primary btn--sm">
+              Abrir en Maps
+            </a>
+          </div>
         </div>
       </div>
     </section>

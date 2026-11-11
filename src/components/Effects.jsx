@@ -36,7 +36,7 @@ export function Cursor() {
       const t = e.target;
       if (!(t instanceof Element)) return;
       const text = t.closest('input, textarea, select');
-      const view = !text && t.closest('.gallery__item');
+      const view = !text && t.closest('.tile, .pmodal__thumb, .pcard');
       const link = !text && !view && t.closest('a, button, [role="tab"], [data-cursor]');
       r.classList.toggle('is-view', !!view);
       r.classList.toggle('is-link', !!link);
